@@ -14,9 +14,13 @@ class CustomTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         UITabBar.appearance().tintColor = .red
+        
         UINavigationBar.appearance().prefersLargeTitles = true
-        let nav = generateNavController(vc: SearchViewController(), title: "Discover", image: #imageLiteral(resourceName: "loupe"))
-        let nav2 = generateNavController(vc: ViewController(), title: "Watch List", image: #imageLiteral(resourceName: "heart"))
+        
+        let searchVC = UIStoryboard(name: "Search", bundle: nil).instantiateViewController(withIdentifier: "Search") as! SearchViewController
+
+        let nav = generateNavController(vc: searchVC, title: "Discover", image: #imageLiteral(resourceName: "loupe"))
+        let nav2 = generateNavController(vc: ViewController(), title: "Watch List", image: #imageLiteral(resourceName: "favorites"))
         let nav3 = generateNavController(vc: ViewController(), title: "Profile", image: #imageLiteral(resourceName: "user"))
 
         viewControllers = [nav, nav2, nav3]
