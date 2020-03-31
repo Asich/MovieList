@@ -28,7 +28,7 @@ class Movie: Codable {
     let year: String
     let length: String
     let rating: String
-    let poster: String?
+    let poster: String
     let plot: String
     let cast: [Cast]
 
@@ -41,6 +41,14 @@ class Movie: Codable {
         self.poster = poster
         self.plot = plot
         self.cast = cast
+    }
+    
+    func getPoster() -> URL {
+        var url = URL(string: "https://i.picsum.photos/id/866/200/300.jpg")
+        if !poster.isEmpty {
+           url = URL(string: poster)
+        }
+        return url!
     }
 }
 

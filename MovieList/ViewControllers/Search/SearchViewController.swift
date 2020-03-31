@@ -68,40 +68,18 @@ class SearchViewController: UIViewController, UISearchBarDelegate {
     }
     
     func searchMovie(query: String) {
-        let session = URLSession.shared
-        let url = URL(string: API.url + "/search/\(query)")!
-        var request = URLRequest(url: url)
-        request.setValue(API.key, forHTTPHeaderField: "x-rapidapi-key")
-
-        let task = session.dataTask(with: request) { data, response, error in
-            if error != nil || data == nil {
-                print("Client error!")
+        MovieService.searchMovie(query: query) { (titles, error) in
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    self.showDefaultAlert(title: "Error", message: error?.localizedDescription)
+                }
                 return
             }
-            
-            guard let response = response as? HTTPURLResponse, (200...299).contains(response.statusCode) else {
-                print("Server error!")
-                return
-            }
-            
-            guard let data = data else {
-                print("No data")
-                return
-            }
-            do {
-                let result = try JSONDecoder().decode(SearchResult.self, from: data)
-                for title in result.titles {
-                   self.fetchMovieDetails(id: title.id)
-               }
-            } catch {
-                print("error \(error.localizedDescription)")
+            titles?.forEach {
+                self.fetchMovieDetails(id: $0.id)
             }
         }
-        task.resume()
     }
-    
-    
-   
 }
 
 
@@ -117,15 +95,23 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         cell.title.text = movie.title
         cell.subtitle.text = movies[indexPath.row].year + "・" + movies[indexPath.row].length
         cell.rating.text = movies[indexPath.row].rating
-        
+        cell.posterImage?.image = UIImage(named: "poster-placeholder")
         cell.posterImage?.alpha = 0.5
         DispatchQueue.global(qos: .background).async {
-            let url = URL(string: movie.poster ?? "https://picsum.photos/seed/picsum/200/300")
-            let data = try? Data(contentsOf: url!)
-            DispatchQueue.main.async {
-                cell.posterImage?.image = UIImage(data: data!)
-                UIView.animate(withDuration: 1) {
-                    cell.posterImage?.alpha = 1
+            do {
+                let data = try Data(contentsOf: movie.getPoster())
+                DispatchQueue.main.async {
+                    cell.posterImage?.image = UIImage(data: data)
+                    UIView.animate(withDuration: 1) {
+                        cell.posterImage?.alpha = 1
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    cell.posterImage?.image = UIImage(named: "poster-placeholder")
+                    UIView.animate(withDuration: 1) {
+                        cell.posterImage?.alpha = 1
+                    }
                 }
             }
         }
@@ -133,6 +119,6 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
        }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        <#code#>
+        
     }
 }
